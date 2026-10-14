@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: purchase-ledger-service
+
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/ledger}
+    username: ${POSTGRES_USER:ledger}
+    password: ${POSTGRES_PASSWORD:ledger}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+
+  cassandra:
+    contact-points: ${CASSANDRA_HOST:localhost}:9042
+    local-datacenter: datacenter1
+    keyspace-name: ledger
+    schema-action: create_if_not_exists
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      ack-mode: record
+
+ledger:
+  kafka:
+    topic: purchase-events
+    group-id: purchase-ledger
+  reconciliation:
+    cron: "0 0 6 * * *"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
